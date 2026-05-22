@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>המתמטיקה של עילי</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Heebo:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --sky:#7ec8e3;
+    --sun:#ffd23f;
+    --sun-deep:#f4a900;
+    --grass:#8bd450;
+    --coral:#ff6b6b;
+    --plum:#9b5de5;
+    --mint:#4ecdc4;
+    --blue:#54a0ff;
+    --orange:#ff9f43;
+    --ink:#3a2e4d;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{height:100%;}
+  body{
+    font-family:'Fredoka','Heebo',sans-serif;
+    background:
+      radial-gradient(circle at 80% 10%, rgba(255,210,63,.55), transparent 38%),
+      linear-gradient(180deg,#aee5f4 0%, #7ec8e3 45%, #b6e8a0 100%);
+    color:var(--ink);
+    overflow-x:hidden;
+    min-height:100%;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding:14px 12px 30px;
+    position:relative;
+  }
+  .cloud{position:fixed;background:#fff;border-radius:50%;opacity:.85;z-index:0;pointer-events:none;}
+  .cloud::before,.cloud::after{content:"";position:absolute;background:#fff;border-radius:50%;}
+  .c1{width:80px;height:80px;top:6%;left:6%;animation:drift 26s linear infinite;}
+  .c1::before{width:55px;height:55px;top:18px;left:-32px;}
+  .c1::after{width:65px;height:65px;top:12px;left:42px;}
+  .c2{width:55px;height:55px;top:18%;right:8%;animation:drift 34s linear infinite reverse;}
+  .c2::before{width:40px;height:40px;top:14px;left:-22px;}
+  .c2::after{width:45px;height:45px;top:10px;left:30px;}
+  @keyframes drift{0%{transform:translateX(0);}50%{transform:translateX(30px);}100%{transform:translateX(0);}}
+
+  .wrap{width:100%;max-width:520px;position:relative;z-index:2;}
+
+  /* כותרת + ניקוד */
+  header{
+    display:flex;align-items:center;justify-content:space-between;
+    gap:10px;margin-bottom:12px;
+  }
+  h1{
+    font-size:1.45rem;font-weight:700;color:#fff;
+    text-shadow:0 3px 0 var(--sun-deep), 0 5px 8px rgba(0,0,0,.18);
+    letter-spacing:.5px;
+  }
+  .score-box{
+    background:#fff;border-radius:18px;padding:8px 14px;
+    box-shadow:0 5px 0 #e0c98f, 0 8px 14px rgba(0,0,0,.12);
+    display:flex;align-items:center;gap:8px;font-weight:700;
+    border:3px solid var(--sun);
+  }
+  .score-box .star{font-size:1.3rem;}
+  .score-num{font-size:1.4rem;color:var(--sun-deep);}
+
+  /* בורר מצב */
+  .mode-tabs{
+    display:flex;gap:8px;background:rgba(255,255,255,.55);
+    border-radius:18px;padding:5px;margin-bottom:14px;
+    box-shadow:0 4px 10px rgba(0,0,0,.1);
+  }
+  .mode-tab{
+    flex:1;background:transparent;border:none;
+    font-family:'Fredoka',sans-serif;font-size:1rem;font-weight:600;
+    color:var(--ink);padding:10px 8px;border-radius:14px;cursor:pointer;
+    transition:all .25s;
+  }
+  .mode-tab.active{
+    background:#fff;color:var(--plum);
+    box-shadow:0 3px 0 #d9d2c4, 0 5px 10px rgba(0,0,0,.1);
+  }
+
+  /* כרטיס תרגיל */
+  .question-card{
+    background:#fff;
+    border-radius:26px;
+    padding:22px 16px 22px;
+    text-align:center;
+    box-shadow:0 8px 0 #d9d2c4, 0 14px 24px rgba(0,0,0,.14);
+    margin-bottom:14px;
+    border:4px solid var(--mint);
+    position:relative;
+  }
+  .question-card.line-mode{border-color:var(--orange);}
+  .question-card::before{
+    content:"✏️";position:absolute;top:-18px;right:18px;font-size:1.8rem;
+    transform:rotate(18deg);
+  }
+  .question-card.line-mode::before{content:"📏";}
+  .q-label{font-size:.95rem;color:#7c7484;font-weight:600;margin-bottom:8px;}
+  .equation{
+    font-family:'Heebo',sans-serif;
+    font-size:3rem;font-weight:900;
+    color:var(--ink);letter-spacing:1px;
+    direction:ltr;
+    line-height:1.1;
+  }
+  .equation .x{color:var(--coral);}
+  .equation .q{color:var(--plum);}
+
+  /* ישר המספרים */
+  .numline{
+    margin-top:6px;padding:18px 10px 10px;
+    position:relative;
+  }
+  .numline-track{
+    position:relative;height:6px;
+    background:linear-gradient(90deg,#a78bfa,#60a5fa,#4ecdc4);
+    border-radius:6px;
+    margin:36px 14px 22px;
+    box-shadow:0 2px 4px rgba(0,0,0,.15);
+  }
+  .numline-track::before,.numline-track::after{
+    content:"";position:absolute;top:50%;width:0;height:0;
+    border-top:9px solid transparent;border-bottom:9px solid transparent;
+    transform:translateY(-50%);
+  }
+  .numline-track::before{
+    right:-12px;border-left:14px solid #a78bfa;
+  }
+  .numline-track::after{
+    left:-12px;border-right:14px solid #4ecdc4;
+  }
+  .tick{
+    position:absolute;top:50%;transform:translate(50%,-50%);
+    width:22px;height:22px;border-radius:50%;
+    background:#fff;border:3px solid #6b7280;
+    display:flex;align-items:center;justify-content:center;
+    font-weight:700;font-size:.95rem;color:var(--ink);
+  }
+  .tick .num{
+    position:absolute;top:-30px;left:50%;transform:translateX(50%);
+    font-family:'Heebo',sans-serif;font-size:1.05rem;font-weight:700;
+    color:var(--ink);white-space:nowrap;direction:ltr;
+  }
+  .tick.missing{
+    background:#fff8e7;border:3px dashed var(--coral);
+    width:34px;height:34px;
+    animation:pulse 1.6s ease-in-out infinite;
+  }
+  .tick.missing .num{
+    color:var(--coral);font-size:1.4rem;top:-32px;
+  }
+  .tick.endpoint{
+    background:var(--sun);border-color:var(--sun-deep);
+    width:26px;height:26px;
+  }
+  @keyframes pulse{
+    0%,100%{transform:translate(50%,-50%) scale(1);}
+    50%{transform:translate(50%,-50%) scale(1.18);}
+  }
+
+  /* תשובות */
+  .answers{
+    display:grid;grid-template-columns:1fr 1fr;gap:12px;
+  }
+  .answer-btn{
+    font-family:'Heebo',sans-serif;
+    font-size:2.1rem;font-weight:900;
+    padding:18px 0;border:none;border-radius:22px;
+    color:#fff;cursor:pointer;
+    box-shadow:0 6px 0 var(--sh), 0 10px 16px rgba(0,0,0,.16);
+    transition:transform .12s, box-shadow .12s, filter .2s;
+    position:relative;
+  }
+  .answer-btn:active{transform:translateY(4px);box-shadow:0 2px 0 var(--sh), 0 4px 8px rgba(0,0,0,.16);}
+  .answer-btn:nth-child(1){background:var(--coral);--sh:#c9453f;}
+  .answer-btn:nth-child(2){background:var(--mint);--sh:#36a89f;}
+  .answer-btn:nth-child(3){background:var(--plum);--sh:#6f3cb3;}
+  .answer-btn:nth-child(4){background:var(--sun-deep);--sh:#c98500;}
+  .answer-btn.correct{
+    background:var(--grass)!important;--sh:#5fa32f!important;
+    animation:pop .45s cubic-bezier(.34,1.56,.64,1);
+  }
+  .answer-btn.wrong{
+    filter:grayscale(.7) brightness(.85);
+    animation:shake .4s;
+  }
+  .answer-btn:disabled{cursor:default;}
+  @keyframes pop{0%{transform:scale(1);}50%{transform:scale(1.14);}100%{transform:scale(1);}}
+  @keyframes shake{0%,100%{transform:translateX(0);}25%{transform:translateX(-7px);}75%{transform:translateX(7px);}}
+
+  /* משוב */
+  .feedback{
+    text-align:center;margin-top:14px;min-height:54px;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+  }
+  .feedback-msg{
+    font-size:1.35rem;font-weight:700;
+    opacity:0;transform:scale(.6);
+    transition:opacity .3s, transform .3s;
+  }
+  .feedback-msg.show{opacity:1;transform:scale(1);}
+  .feedback-msg.good{color:#3a8a1d;}
+  .feedback-msg.try{color:var(--coral);}
+  .next-btn{
+    margin-top:8px;
+    font-family:'Fredoka',sans-serif;font-size:1.1rem;font-weight:600;
+    background:#fff;color:var(--ink);
+    border:3px solid var(--sun);
+    padding:9px 26px;border-radius:30px;cursor:pointer;
+    box-shadow:0 5px 0 #e0c98f;
+    opacity:0;pointer-events:none;transition:opacity .3s, transform .12s;
+  }
+  .next-btn.show{opacity:1;pointer-events:auto;}
+  .next-btn:active{transform:translateY(3px);box-shadow:0 2px 0 #e0c98f;}
+
+  /* כפתור רמז */
+  .hint-btn{
+    margin-top:14px;
+    font-family:'Fredoka',sans-serif;font-size:1.15rem;font-weight:700;
+    background:linear-gradient(180deg,#ffe066,var(--sun));
+    color:var(--ink);
+    border:3px solid var(--sun-deep);
+    padding:12px 26px;border-radius:30px;cursor:pointer;
+    box-shadow:0 5px 0 #c98500, 0 8px 16px rgba(0,0,0,.2);
+    display:inline-flex;align-items:center;gap:8px;
+    transition:transform .12s;
+    animation:hintPulse 2.2s ease-in-out infinite;
+  }
+  .hint-btn:active{transform:translateY(4px);box-shadow:0 1px 0 #c98500, 0 2px 6px rgba(0,0,0,.15);}
+  .hint-btn .bulb{font-size:1.4rem;}
+  @keyframes hintPulse{
+    0%,100%{transform:scale(1);}
+    50%{transform:scale(1.06);}
+  }
+
+  /* חלונית הרמז (מודאל) */
+  .hint-overlay{
+    position:fixed;inset:0;background:rgba(58,46,77,.55);
+    backdrop-filter:blur(3px);
+    display:flex;align-items:center;justify-content:center;
+    z-index:100;padding:16px;
+    opacity:0;pointer-events:none;transition:opacity .25s;
+  }
+  .hint-overlay.show{opacity:1;pointer-events:auto;}
+  .hint-modal{
+    background:#fff;border-radius:24px;
+    max-width:480px;width:100%;
+    padding:18px 16px 16px;
+    box-shadow:0 18px 40px rgba(0,0,0,.35);
+    border:4px solid var(--sun);
+    position:relative;
+    transform:scale(.85);transition:transform .3s cubic-bezier(.34,1.56,.64,1);
+    max-height:90vh;overflow-y:auto;
+  }
+  .hint-overlay.show .hint-modal{transform:scale(1);}
+  .hint-close{
+    position:absolute;top:8px;left:10px;
+    background:#fff;border:2px solid var(--coral);color:var(--coral);
+    width:34px;height:34px;border-radius:50%;
+    font-size:1.2rem;font-weight:900;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:0 3px 0 #c9453f;
+  }
+  .hint-close:active{transform:translateY(2px);box-shadow:0 1px 0 #c9453f;}
+  .hint-title{
+    text-align:center;font-size:1.15rem;font-weight:700;
+    color:var(--plum);margin-bottom:6px;
+  }
+  .hint-sub{
+    text-align:center;font-size:.9rem;color:#7c7484;margin-bottom:12px;
+  }
+  .hint-sub b{color:var(--coral);}
+
+  /* רמז כפל - רשת עיגולים אינטראקטיביים */
+  .count-board{
+    background:linear-gradient(165deg,#fff5e0,#ffe9c2);
+    border-radius:18px;padding:12px 10px;
+    box-shadow:inset 0 3px 6px rgba(0,0,0,.08), 0 4px 0 #e0c98f;
+    border:3px solid #f4d57a;
+  }
+  .count-row{
+    display:flex;align-items:center;justify-content:center;
+    gap:6px;margin:4px 0;
+    padding:5px 6px;
+    background:rgba(255,255,255,.4);
+    border-radius:12px;
+    position:relative;
+    min-height:44px;
+  }
+  .count-row::after{
+    content:attr(data-running);
+    position:absolute;left:8px;top:50%;transform:translateY(-50%);
+    font-family:'Heebo',sans-serif;font-size:.95rem;font-weight:900;
+    color:var(--plum);
+    background:#fff;padding:3px 9px;border-radius:10px;
+    border:2px solid var(--plum);
+    min-width:32px;text-align:center;
+    opacity:0;transition:opacity .25s;
+  }
+  .count-row.has-marked::after{opacity:1;}
+
+  .circle{
+    width:34px;height:34px;border-radius:50%;
+    background:#fff;
+    border:3px solid #b8a78f;
+    cursor:pointer;
+    transition:transform .15s, background .2s, border-color .2s;
+    position:relative;
+    flex-shrink:0;
+  }
+  .circle:active{transform:scale(.85);}
+  .circle.marked{
+    background:radial-gradient(circle at 32% 28%, #fff 0%, var(--coral) 42%, #c9453f 100%);
+    border-color:#c9453f;
+    animation:circlePop .35s cubic-bezier(.34,1.56,.64,1);
+  }
+  .circle.marked::after{
+    content:"✓";
+    position:absolute;inset:0;
+    display:flex;align-items:center;justify-content:center;
+    color:#fff;font-weight:900;font-size:1.1rem;
+    text-shadow:0 1px 2px rgba(0,0,0,.3);
+  }
+  @keyframes circlePop{
+    0%{transform:scale(1);}
+    50%{transform:scale(1.3);}
+    100%{transform:scale(1);}
+  }
+
+  .count-display{
+    margin-top:12px;
+    background:#fff;border-radius:16px;padding:10px;
+    border:3px solid var(--sun);
+    text-align:center;
+    box-shadow:0 4px 0 #e0c98f;
+  }
+  .count-display .label{
+    font-size:.9rem;color:#7c7484;font-weight:600;
+  }
+  .count-display .num{
+    font-family:'Heebo',sans-serif;
+    font-size:2.5rem;font-weight:900;
+    color:var(--plum);
+    line-height:1;
+    margin-top:2px;
+  }
+  .count-display .total{
+    font-size:.85rem;color:#7c7484;margin-top:2px;
+  }
+  .count-actions{
+    display:flex;gap:8px;margin-top:10px;justify-content:center;
+  }
+  .count-actions button{
+    font-family:'Fredoka',sans-serif;font-size:.95rem;font-weight:600;
+    padding:8px 16px;border-radius:20px;cursor:pointer;border:none;
+    background:#fff;color:var(--ink);border:2px solid #d9d2c4;
+    box-shadow:0 3px 0 #d9d2c4;
+  }
+  .count-actions button.primary{
+    background:var(--mint);color:#fff;border-color:#36a89f;box-shadow:0 3px 0 #36a89f;
+  }
+  .count-actions button:active{transform:translateY(2px);box-shadow:0 1px 0 #d9d2c4;}
+  .count-actions button.primary:active{box-shadow:0 1px 0 #36a89f;}
+
+  @media(max-width:380px){
+    .circle{width:28px;height:28px;border-width:2px;}
+    .circle.marked::after{font-size:.95rem;}
+    .count-row{gap:4px;}
+  }
+
+  .hint-tip{
+    text-align:center;margin-top:10px;
+    font-size:.9rem;color:var(--ink);font-weight:600;
+    background:rgba(255,210,63,.3);border-radius:12px;padding:8px;
+  }
+
+  /* רמז לישר המספרים */
+  .hint-line{
+    text-align:center;padding:20px 8px;
+  }
+  .hint-line .big-num{
+    font-family:'Heebo',sans-serif;font-size:2rem;font-weight:900;
+    color:var(--plum);direction:ltr;
+  }
+  .hint-line .arrow-row{
+    display:flex;align-items:center;justify-content:center;
+    gap:8px;margin:14px 0;flex-wrap:wrap;direction:ltr;
+  }
+  .hint-line .arr{
+    font-size:1.4rem;color:var(--coral);
+  }
+
+  .confetti{position:fixed;width:12px;height:12px;z-index:50;pointer-events:none;top:-20px;border-radius:2px;}
+  @keyframes fall{to{transform:translateY(110vh) rotate(720deg);opacity:0;}}
+
+  @media(max-width:380px){
+    .equation{font-size:2.5rem;}
+    .answer-btn{font-size:1.8rem;}
+    .tick{width:20px;height:20px;}
+    .tick.missing{width:30px;height:30px;}
+    .tick .num{font-size:.9rem;}
+    .tick.missing .num{font-size:1.2rem;}
+  }
+</style>
+</head>
+<body>
+<div class="cloud c1"></div>
+<div class="cloud c2"></div>
+
+<div class="wrap">
+  <header>
+    <h1>🎓 המתמטיקה של עילי</h1>
+    <div class="score-box">
+      <span class="star">⭐</span>
+      <span class="score-num" id="score">0</span>
+    </div>
+  </header>
+
+  <div class="mode-tabs">
+    <button class="mode-tab active" data-mode="mult">✖️ כפל</button>
+    <button class="mode-tab" data-mode="line">📏 ישר המספרים</button>
+    <button class="mode-tab" data-mode="mix">🎲 מעורב</button>
+  </div>
+
+  <div class="question-card" id="qCard">
+    <div class="q-label" id="qLabel">כמה זה?</div>
+    <div id="qBody"></div>
+  </div>
+
+  <div style="text-align:center;margin-bottom:14px;">
+    <button class="hint-btn" id="hintBtn" type="button">
+      <span class="bulb">💡</span><span>צריך רמז?</span>
+    </button>
+  </div>
+
+  <div class="answers" id="answers"></div>
+
+  <div class="feedback">
+    <div class="feedback-msg" id="feedbackMsg"></div>
+    <button class="next-btn" id="nextBtn">תרגיל הבא ➜</button>
+  </div>
+
+  <!-- מודאל רמז -->
+  <div class="hint-overlay" id="hintOverlay">
+    <div class="hint-modal">
+      <button class="hint-close" id="hintClose" type="button">✕</button>
+      <div id="hintContent"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  let mode='mult';      // 'mult' | 'line' | 'mix'
+  let currentType='mult';
+  let answer=0,score=0,locked=false;
+  let qMeta={};   // פרטי התרגיל הנוכחי עבור הרמז
+
+  const qCard   = document.getElementById('qCard');
+  const qLabel  = document.getElementById('qLabel');
+  const qBody   = document.getElementById('qBody');
+  const ansEl   = document.getElementById('answers');
+  const scoreEl = document.getElementById('score');
+  const msgEl   = document.getElementById('feedbackMsg');
+  const nextBtn = document.getElementById('nextBtn');
+  const hintBtn     = document.getElementById('hintBtn');
+  const hintOverlay = document.getElementById('hintOverlay');
+  const hintClose   = document.getElementById('hintClose');
+  const hintContent = document.getElementById('hintContent');
+
+  // ---- בחירת מצב ----
+  document.querySelectorAll('.mode-tab').forEach(tab=>{
+    tab.addEventListener('click',()=>{
+      document.querySelectorAll('.mode-tab').forEach(t=>t.classList.remove('active'));
+      tab.classList.add('active');
+      mode=tab.dataset.mode;
+      score=0;scoreEl.textContent=0;
+      newQuestion();
+    });
+  });
+
+  // ---- עזרים ----
+  function shuffle(arr){
+    for(let i=arr.length-1;i>0;i--){
+      const j=Math.floor(Math.random()*(i+1));
+      [arr[i],arr[j]]=[arr[j],arr[i]];
+    }
+    return arr;
+  }
+  const rand=(min,max)=>Math.floor(Math.random()*(max-min+1))+min;
+
+  // ---- יצירת תרגיל כפל ----
+  function buildMult(){
+    currentType='mult';
+    qCard.classList.remove('line-mode');
+    qLabel.textContent='כמה זה?';
+
+    const a=rand(1,9), b=rand(1,9);
+    answer=a*b;
+    qMeta={type:'mult', a, b};
+    qBody.innerHTML = `<div class="equation"><span>${a}</span> <span class="x">×</span> <span>${b}</span> <span class="x">=</span> <span class="q">?</span></div>`;
+
+    // תשובות שגויות
+    const opts=new Set([answer]);
+    let guard=0;
+    while(opts.size<4 && guard<300){
+      guard++;
+      let cand;
+      if(Math.random()<0.5){
+        cand = answer + rand(-4,4);
+      } else {
+        const da=Math.max(1,a+rand(-1,1));
+        const db=Math.max(1,b+rand(-1,1));
+        cand=da*db;
+      }
+      if(cand>0 && cand<=99 && cand!==answer) opts.add(cand);
+    }
+    renderAnswers(shuffle([...opts]));
+  }
+
+  // ---- יצירת תרגיל ישר המספרים ----
+  // צריך לבחור: טווח, צעד, מיקום של המספר החסר
+  function buildLine(){
+    currentType='line';
+    qCard.classList.add('line-mode');
+    qLabel.textContent='איזה מספר חסר על ישר המספרים?';
+
+    // נבחר טווח מתאים. ננסה לגוון:
+    // טיפוסים שונים: צעד 1 בטווח קטן, צעד 1 בטווח בינוני, צעד 2, צעד 5, צעד 10
+    const patterns=[
+      {step:1, count:7,  startMin:0,  startMax:20},
+      {step:1, count:7,  startMin:10, startMax:50},
+      {step:2, count:6,  startMin:0,  startMax:20},
+      {step:5, count:6,  startMin:0,  startMax:30},
+      {step:10,count:6,  startMin:0,  startMax:50},
+      {step:1, count:6,  startMin:30, startMax:80}
+    ];
+    const p=patterns[rand(0,patterns.length-1)];
+    const start=rand(p.startMin,p.startMax);
+    const numbers=[];
+    for(let i=0;i<p.count;i++) numbers.push(start + i*p.step);
+
+    // נבחר אינדקס למספר החסר - לא תמיד באמצע, אבל לא בקצוות (כדי שיהיו רמזים משני הצדדים)
+    const missingIdx = rand(1, p.count-2);
+    answer = numbers[missingIdx];
+    qMeta={type:'line', numbers, missingIdx, step:p.step};
+
+    // בניית התצוגה
+    const track = document.createElement('div');
+    track.className='numline';
+    const inner = document.createElement('div');
+    inner.className='numline-track';
+    track.appendChild(inner);
+
+    const lastIdx=p.count-1;
+    numbers.forEach((n,i)=>{
+      const tick=document.createElement('div');
+      tick.className='tick';
+      if(i===0 || i===lastIdx) tick.classList.add('endpoint');
+      if(i===missingIdx){
+        tick.classList.add('missing');
+        tick.innerHTML='<span class="num">?</span>';
+      } else {
+        tick.innerHTML=`<span class="num">${n}</span>`;
+      }
+      // מיקום: i=0 בצד ימין (RTL), אבל אנחנו עובדים LTR למסלול
+      // נמקם את ה-tick לפי אחוזים מימין כי direction RTL
+      const pct = (i/lastIdx)*100;
+      tick.style.right = pct+'%';
+      inner.appendChild(tick);
+    });
+
+    qBody.innerHTML='';
+    qBody.appendChild(track);
+
+    // תשובות שגויות - קרובות למספר הנכון
+    const opts=new Set([answer]);
+    const step=p.step;
+    const candidates=[answer-step, answer+step, answer-step*2, answer+step*2,
+                      answer-1, answer+1, answer+step+1, answer-step-1];
+    shuffle(candidates);
+    for(const c of candidates){
+      if(opts.size>=4) break;
+      if(c>=0 && c<=999 && c!==answer && !numbers.includes(c)) opts.add(c);
+    }
+    // אם עדיין חסר, מוסיפים אקראיים סבירים
+    let g=0;
+    while(opts.size<4 && g<100){
+      g++;
+      const c=answer + rand(-step*3,step*3);
+      if(c>=0 && c!==answer && !numbers.includes(c)) opts.add(c);
+    }
+    renderAnswers(shuffle([...opts]));
+  }
+
+  // ---- רינדור תשובות ----
+  function renderAnswers(opts){
+    ansEl.innerHTML='';
+    opts.forEach(val=>{
+      const btn=document.createElement('button');
+      btn.className='answer-btn';
+      btn.textContent=val;
+      btn.addEventListener('click',()=>checkAnswer(val,btn));
+      ansEl.appendChild(btn);
+    });
+    msgEl.className='feedback-msg';
+    msgEl.textContent='';
+    nextBtn.classList.remove('show');
+  }
+
+  function newQuestion(){
+    locked=false;
+    let actual = mode;
+    if(mode==='mix') actual = Math.random()<0.5 ? 'mult' : 'line';
+    if(actual==='mult') buildMult();
+    else buildLine();
+  }
+
+  // ---- בדיקה ----
+  const goodMsgs=['עילי אלוף! 🏆','עילי אלוף! 🎉','עילי אלוף! 🌟','עילי אלוף! 👏','עילי אלוף! 💫'];
+  const tryMsgs =['כמעט! נסה שוב 💪','אופס, נסה עוד פעם 🤔','חשוב טוב ותנסה שוב 🤓'];
+
+  function checkAnswer(val,btn){
+    if(locked) return;
+    if(val===answer){
+      locked=true;
+      btn.classList.add('correct');
+      [...ansEl.children].forEach(b=>b.disabled=true);
+      score++;
+      scoreEl.textContent=score;
+      msgEl.textContent=goodMsgs[Math.floor(Math.random()*goodMsgs.length)];
+      msgEl.className='feedback-msg good show';
+      nextBtn.classList.add('show');
+      celebrate();
+    } else {
+      btn.classList.add('wrong');
+      btn.disabled=true;
+      msgEl.textContent=tryMsgs[Math.floor(Math.random()*tryMsgs.length)];
+      msgEl.className='feedback-msg try show';
+    }
+  }
+
+  function celebrate(){
+    const colors=['#ff6b6b','#feca57','#8bd450','#4ecdc4','#54a0ff','#9b5de5','#f368e0'];
+    for(let i=0;i<28;i++){
+      const c=document.createElement('div');
+      c.className='confetti';
+      c.style.left=Math.random()*100+'vw';
+      c.style.background=colors[Math.floor(Math.random()*colors.length)];
+      c.style.animation=`fall ${1+Math.random()*1.4}s linear ${Math.random()*0.3}s forwards`;
+      if(Math.random()<0.5) c.style.borderRadius='50%';
+      document.body.appendChild(c);
+      setTimeout(()=>c.remove(),3000);
+    }
+  }
+
+  // ---- רמז ----
+  function showHint(){
+    if(qMeta.type==='mult'){
+      hintContent.innerHTML = buildMultHint(qMeta.a, qMeta.b);
+      hintOverlay.classList.add('show');
+      wireCountHint();
+    } else if(qMeta.type==='line'){
+      hintContent.innerHTML = buildLineHint(qMeta.numbers, qMeta.missingIdx, qMeta.step);
+      hintOverlay.classList.add('show');
+    }
+  }
+  function hideHint(){ hintOverlay.classList.remove('show'); }
+
+  function buildMultHint(a,b){
+    // a קבוצות של b עיגולים. כדי שיהיה ברור ויזואלית, נשים את הקטן יותר כקבוצות
+    // (פחות שורות, יותר עיגולים בכל שורה - קל יותר לראות).
+    let groups=a, perGroup=b;
+    if(b>a){ groups=b; perGroup=a; }
+    // אבל אם זה יוצא הרבה עיגולים בשורה (>9), נהפוך
+    if(perGroup>9){ [groups,perGroup]=[perGroup,groups]; }
+
+    let rows='';
+    for(let g=0;g<groups;g++){
+      let circles='';
+      for(let i=0;i<perGroup;i++){
+        circles += `<div class="circle" data-row="${g}" data-idx="${i}"></div>`;
+      }
+      rows += `<div class="count-row" data-row="${g}" data-per="${perGroup}">${circles}</div>`;
+    }
+    return `
+      <div class="hint-title">💡 ${a} × ${b}</div>
+      <div class="hint-sub"><b>${groups}</b> קבוצות של <b>${perGroup}</b></div>
+      <div class="count-board" id="countBoard">${rows}</div>
+      <div class="count-display">
+        <div class="label">סימנת עד עכשיו</div>
+        <div class="num" id="countNum">0</div>
+        <div class="total">מתוך ${a*b}</div>
+      </div>
+      <div class="count-actions">
+        <button id="markAllBtn" class="primary" type="button">סמן הכל בבת אחת ✨</button>
+        <button id="resetBtn" type="button">איפוס 🔄</button>
+      </div>
+    `;
+  }
+
+  // לאחר שהוצג הרמז, נחבר אירועים לעיגולים
+  function wireCountHint(){
+    const board   = document.getElementById('countBoard');
+    if(!board) return;
+    const countEl = document.getElementById('countNum');
+    const markAll = document.getElementById('markAllBtn');
+    const resetBt = document.getElementById('resetBtn');
+
+    function updateCount(){
+      const marked = board.querySelectorAll('.circle.marked').length;
+      countEl.textContent = marked;
+      // לכל שורה: הצג מספר רץ מצטבר אם יש בה לפחות סימון אחד
+      let running=0;
+      board.querySelectorAll('.count-row').forEach(row=>{
+        const mk = row.querySelectorAll('.circle.marked').length;
+        running += mk;
+        if(mk>0){
+          row.classList.add('has-marked');
+          row.setAttribute('data-running', running);
+        } else {
+          row.classList.remove('has-marked');
+          row.removeAttribute('data-running');
+        }
+      });
+    }
+
+    board.addEventListener('click',(e)=>{
+      const c = e.target.closest('.circle');
+      if(!c) return;
+      c.classList.toggle('marked');
+      updateCount();
+    });
+
+    markAll.addEventListener('click',()=>{
+      const circles = [...board.querySelectorAll('.circle')];
+      const allMarked = circles.every(c=>c.classList.contains('marked'));
+      if(allMarked){
+        circles.forEach(c=>c.classList.remove('marked'));
+      } else {
+        // סימון מדורג עם השהיה קצרה לאפקט יפה
+        circles.forEach((c,i)=>{
+          setTimeout(()=>{ c.classList.add('marked'); updateCount(); }, i*30);
+        });
+        return;
+      }
+      updateCount();
+    });
+
+    resetBt.addEventListener('click',()=>{
+      board.querySelectorAll('.circle.marked').forEach(c=>c.classList.remove('marked'));
+      updateCount();
+    });
+  }
+
+  function buildLineHint(numbers, missingIdx, step){
+    const prev = numbers[missingIdx-1];
+    const next = numbers[missingIdx+1];
+    return `
+      <div class="hint-title">💡 רמז: ישר המספרים</div>
+      <div class="hint-sub">המספרים קופצים כל פעם ב־<b>${step}</b></div>
+      <div class="hint-line">
+        <div class="arrow-row">
+          <span class="big-num">${prev}</span>
+          <span class="arr">+${step} →</span>
+          <span class="big-num" style="color:var(--coral)">?</span>
+          <span class="arr">+${step} →</span>
+          <span class="big-num">${next}</span>
+        </div>
+        <div class="hint-tip">חַשֵּב: ${prev} + ${step} = ?<br>או: ${next} − ${step} = ?</div>
+      </div>
+    `;
+  }
+
+  hintBtn.addEventListener('click',showHint);
+  hintClose.addEventListener('click',hideHint);
+  hintOverlay.addEventListener('click',e=>{ if(e.target===hintOverlay) hideHint(); });
+
+  nextBtn.addEventListener('click',()=>{ hideHint(); newQuestion(); });
+
+  newQuestion();
+})();
+</script>
+</body>
+</html>
